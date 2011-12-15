@@ -9,6 +9,7 @@ public class ClientHandler {
     public Socket socket;
     public PrintWriter out;
     public BufferedReader in;
+    public CommandHandler cmdHandler;
     private boolean atLogin = false;
 
     public ClientHandler (Socket s) throws IOException {
@@ -22,15 +23,37 @@ public class ClientHandler {
                     "| | | | | | | (_| | | | (_| | | | | | | (_| | |   \n" +
                     "\\_| |_/_| |_|\\__, |_|  \\__,_|_| |_| |_|\\__,_|_|   \n" +
                     "              __/ |                               \n" +
-                    "             |___/                                ");
+                    "             |___/         By Crashdoom           \n");
         out.println("You are connected to the ALPHA server");
-        out.print("Please enter your name: ");
+        out.println("If you're registered please use    ':connect <name> <pass>'");
+        out.println("If you want to join as a guest use ':connect guest'\n");
+        out.println("Use command 'QUIT' to exit (In UPPER case!)\n");
         out.flush();
+        cmdHandler = new CommandHandler();
         System.out.println("Client connected: " + s.getInetAddress());
         while (s.isConnected()) {
             String inData = in.readLine();
-            out.println("You said: " + inData);
-            out.flush();
+            String[] cmd = inData.split(" ");
+            if (!cmdHandler.processCommand(cmd[0])) {
+                if (cmd[0].equals("QUIT")) {
+                    out.println("Goodbye!");
+                    out.flush();
+                    break;
+                } else if (cmd[0].equals(":connect")) {
+                    if (cmd.length != 2) {
+                        out.println("Invalid parameters!");
+                        out.flush();
+                    } else {
+                        out.println("Logged in as: " + cmd[1]);
+                        out.flush();
+                    }
+                } else {
+                    if (cmd[0].startsWith(":")) {
+                        out.println("Unknown Command.");
+                        out.flush();
+                    }
+                }
+            }
         }
         try {
             s.close();
