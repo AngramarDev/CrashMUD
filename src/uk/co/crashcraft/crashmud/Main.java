@@ -5,9 +5,6 @@ import uk.co.crashcraft.crashmud.client.ClientHandler;
 import java.net.*;
 import java.io.*;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 
 public class Main {
@@ -17,8 +14,9 @@ public class Main {
     public static ServerSocket serverSocket;
     public static boolean shutdownServer = false;
     public static int port = 4444;
+    public static ArrayList<String> activeUsers;
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         System.out.println("  ___                                             \n" +
                 " / _ \\                                            \n" +
                 "/ /_\\ \\_ __   __ _ _ __ __ _ _ __ ___   __ _ _ __ \n" +
@@ -37,18 +35,9 @@ public class Main {
         }
         System.out.println("Now accepting connections!");
         while (!shutdownServer) {
-            try {
-                Socket s = serverSocket.accept();
-                ClientHandler client = new ClientHandler(s);
-            } catch (IOException ex) {
-                System.out.println("Exception: " + ex);
-                try {
-                    serverSocket.close();
-                    System.exit(1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            Socket s = serverSocket.accept();
+            Runnable client = new ClientHandler(s);
+            new Thread(client).start();
         }
     }
 }
