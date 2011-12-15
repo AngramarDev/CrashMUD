@@ -1,6 +1,7 @@
 package uk.co.crashcraft.crashmud;
 
 import uk.co.crashcraft.crashmud.client.ClientHandler;
+import uk.co.crashcraft.crashmud.client.GlobalVars;
 
 import java.net.*;
 import java.io.*;
@@ -14,7 +15,7 @@ public class Main {
     public static ServerSocket serverSocket;
     public static boolean shutdownServer = false;
     public static int port = 4444;
-    public static ArrayList<String> activeUsers;
+    public static GlobalVars globalVars = new GlobalVars();
 
     public static void main(String args[]) throws IOException {
         System.out.println("  ___                                             \n" +
@@ -36,7 +37,7 @@ public class Main {
         System.out.println("Now accepting connections!");
         while (!shutdownServer) {
             Socket s = serverSocket.accept();
-            Runnable client = new ClientHandler(s);
+            Runnable client = new ClientHandler(globalVars, s);
             new Thread(client).start();
         }
     }

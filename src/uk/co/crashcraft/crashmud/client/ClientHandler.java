@@ -3,7 +3,6 @@ package uk.co.crashcraft.crashmud.client;
 import uk.co.crashcraft.crashmud.Main;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
@@ -12,11 +11,13 @@ public class ClientHandler implements Runnable {
     public PrintWriter out;
     public BufferedReader in;
     public CommandHandler cmdHandler;
-    private String username;
+    public String username = null;
+    public GlobalVars gVars;
     private boolean atLogin = false;
     private volatile Thread thisThread;
 
-    public ClientHandler (Socket s) {
+    public ClientHandler (GlobalVars vars, Socket s) {
+        gVars = vars;
         socket = s;
     }
 
@@ -47,6 +48,7 @@ public class ClientHandler implements Runnable {
                     if (cmd[0].equals("QUIT")) {
                         out.println("Goodbye!");
                         out.flush();
+                        System.out.println("Client disconnecting: " + socket.getInetAddress());
                         socket.close();
                         thisThread = null;
                         return;
@@ -58,13 +60,13 @@ public class ClientHandler implements Runnable {
                             if (username != null) {
                                 out.println("You're logged in as: " + username);
                                 out.flush();
-                            } else if (Main.activeUsers.contains(cmd[1])) {
-                                out.println("This username is already in use!");
-                                out.flush();
+                            //} else if (gVars.activeUsers.contains(cmd[1])) {
+                            //    out.println("This username is already in use!");
+                            //    out.flush();
                             } else { 
                                 out.println("Logged in as: " + cmd[1]);
                                 out.flush();
-                                Main.activeUsers.add(cmd[1]);
+                                //gVars.activeUsers.add(cmd[1]);
                                 username = cmd[1];
                             }
                         }
@@ -78,7 +80,7 @@ public class ClientHandler implements Runnable {
             }
         } catch (IOException e) {
             if (username != null) {
-                Main.activeUsers.remove(username);
+                gVars.activeUsers.remove(username);
             }
             try {
                 socket.close();
@@ -87,7 +89,7 @@ public class ClientHandler implements Runnable {
             }
         } catch (NullPointerException e) {
             if (username != null) {
-                Main.activeUsers.remove(username);
+                gVars.activeUsers.remove(username);
             }
         }
     }
